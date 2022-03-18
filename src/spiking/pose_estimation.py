@@ -17,7 +17,7 @@ mp_pose = mp.solutions.pose
 
 
 def mediapipe_blazepose_pe() -> None:
-    cap = cv.VideoCapture(os.path.join(sample, "og_sample.mp4"))
+    cap = cv.VideoCapture(os.path.join(pathdir, "1.mp4"))
     # cap = cv.VideoCapture(0)
 
     width: int = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
@@ -42,8 +42,8 @@ def mediapipe_blazepose_pe() -> None:
                       smooth_landmarks=True,  # filters pose landmarks across different input images to reduce jitter
                       enable_segmentation=False,
                       smooth_segmentation=False,
-                      min_tracking_confidence=0.95,
-                      min_detection_confidence=0.95) as pose:
+                      min_tracking_confidence=0.90,
+                      min_detection_confidence=0.90) as pose:
 
         while cap.isOpened():
             ret: bool
@@ -122,4 +122,4 @@ def mediapipe_blazepose_pe() -> None:
         cap.release()
         writer.release()
         cv.destroyAllWindows()
-        process_data(results_data, fcount, fps)
+        process_data(results_data, fps, fcount)
