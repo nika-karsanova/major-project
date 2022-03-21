@@ -17,8 +17,12 @@ mp_pose = mp.solutions.pose
 
 
 def mediapipe_blazepose_pe() -> None:
-    cap = cv.VideoCapture(os.path.join(pathdir, "1.mp4"))
-    # cap = cv.VideoCapture(0)
+    """
+    Sets up, runs and collects the output of the BlazePose model on the Fis-V figure skating dataset videos.
+
+    :return:
+    """
+    cap = cv.VideoCapture(os.path.join(sample, "og_sample.mp4"))
 
     width: int = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
     height: int = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
@@ -26,19 +30,19 @@ def mediapipe_blazepose_pe() -> None:
     fps: int = int(cap.get(cv.CAP_PROP_FPS))
 
     writer = cv.VideoWriter(os.path.join(outpath, "mediapipe_output.mp4v"),
-                            cv.VideoWriter_fourcc("P", "I", "M", "1"),
+                            cv.VideoWriter_fourcc("P", "I", "M", "1"),  # MPEG-1 codec used for video
                             fps,
                             (width, height),
                             isColor=False)
 
-    results_data = {}
+    results_data = {}  # dict to hold pose estimator output data per frame for further analysis
     data = []
 
     """
     Setting up the model with the provided configuration
     """
     with mp_pose.Pose(static_image_mode=False,  # treat the stream as video
-                      model_complexity=2,
+                      model_complexity=2,  # higher complexity leads to more accurate results
                       smooth_landmarks=True,  # filters pose landmarks across different input images to reduce jitter
                       enable_segmentation=False,
                       smooth_segmentation=False,
@@ -64,16 +68,15 @@ def mediapipe_blazepose_pe() -> None:
 
             """
             Data contained within landmark array after successful pose extraction
+            
+            results.pose_landmarks - NormalisedLandmarkList Type
+            results.pose_landmarks.landmark - RepeatedCompositeContainer type
+            results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE] - NormalizedLandmark Type
+            mp_pose.POSE_CONNECTIONS - Dict, containing connections between the landmarks 
+            
             """
-
             current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
-            if results.pose_landmarks:
-                # print(results.pose_landmarks)  # NormalisedLandmarkList Type
-                # print(results.pose_landmarks.landmark)  # RepeatedCompositeContainer
-                # print(current_frame)
-                # print(results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE])  # NormalizedLandmark Type
-                # print(mp_pose.POSE_CONNECTIONS)
-
+            if results.pose_landmarks:  # if pose estimator derived an output
                 results_data[current_frame] = results.pose_landmarks.landmark
                 data.append(results.pose_landmarks.landmark)
             else:
