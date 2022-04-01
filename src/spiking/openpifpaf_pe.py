@@ -7,7 +7,7 @@ import cv2 as cv
 import os
 
 pathdir_wsl = "/mnt/c/Users/welleron/Desktop/mmp/datasets/womens_sp/videos/"
-outpath_wsl = "/mnt/c/Users/welleron/Desktop/mmp/tutorials/output/"
+outpath_wsl = "/mnt/c/Users/welleron/Desktop/mmp/spiking/output/"
 
 
 # def posepifpaf_pe() -> None:

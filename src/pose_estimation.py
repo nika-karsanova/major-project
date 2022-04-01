@@ -3,11 +3,15 @@ from typing import NamedTuple, Any
 
 import cv2 as cv
 import mediapipe as mp
+import numpy as np
+import colorthief as ct
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 
 from plotting import process_data
 
 pathdir = "C:/Users/welleron/Desktop/mmp/datasets/womens_sp/videos/"
-outpath = "C:/Users/welleron/Desktop/mmp/tutorials/output/"
+outpath = "C:/Users/welleron/Desktop/mmp/spiking/output/"
 
 sample = "C:/Users/welleron/Desktop/mmp/weekly_tasks/week7/midprojectdemo_videos/"
 
@@ -22,7 +26,7 @@ def mediapipe_blazepose_pe() -> None:
 
     :return:
     """
-    cap = cv.VideoCapture(os.path.join(sample, "og_sample.mp4"))
+    cap = cv.VideoCapture(os.path.join(pathdir, "1.mp4"))
 
     width: int = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
     height: int = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
@@ -46,8 +50,8 @@ def mediapipe_blazepose_pe() -> None:
                       smooth_landmarks=True,  # filters pose landmarks across different input images to reduce jitter
                       enable_segmentation=False,
                       smooth_segmentation=False,
-                      min_tracking_confidence=0.90,
-                      min_detection_confidence=0.90) as pose:
+                      min_tracking_confidence=0.7,
+                      min_detection_confidence=0.7) as pose:
 
         while cap.isOpened():
             ret: bool
@@ -76,24 +80,30 @@ def mediapipe_blazepose_pe() -> None:
             
             """
             current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
+            results_data[current_frame] = None
             if results.pose_landmarks:  # if pose estimator derived an output
                 results_data[current_frame] = results.pose_landmarks.landmark
-                data.append(results.pose_landmarks.landmark)
-            else:
-                data.append(None)
-                results_data[current_frame] = None
 
             """
             Putting annotation onto the presented frame
             """
-            # cv.putText(image,  # frame
-            #            str(1),  # actual text
-            #            (50, 50),  # left corner
-            #            cv.FONT_HERSHEY_SIMPLEX,
-            #            1.0,  # size
-            #            (255, 0, 0),  # colour
-            #            2,  # thickness
-            #            cv.LINE_AA)
+            cv.putText(image,  # frame
+                       str(current_frame),  # actual text
+                       (50, 50),  # left corner
+                       cv.FONT_HERSHEY_SIMPLEX,
+                       1.0,  # size
+                       (255, 255, 255),  # colour
+                       2,  # thickness
+                       cv.LINE_AA)
+
+            cv.putText(image,  # frame
+                       str(fcount),  # actual text
+                       (50, 100),  # left corner
+                       cv.FONT_HERSHEY_SIMPLEX,
+                       1.0,  # size
+                       (0, 0, 0),  # colour
+                       2,  # thickness
+                       cv.LINE_AA)
 
             """
             Output of BlazePose in 3D plot representation
@@ -101,8 +111,8 @@ def mediapipe_blazepose_pe() -> None:
             # mp_drawing.plot_landmarks(  # 3d plot representation
             #     results.pose_world_landmarks,
             #     mp_pose.POSE_CONNECTIONS,
-            #     elevation=0,
-            #     azimuth=0
+            #     # elevation=0,
+            #     # azimuth=0
             # )
 
             """
@@ -125,4 +135,5 @@ def mediapipe_blazepose_pe() -> None:
         cap.release()
         writer.release()
         cv.destroyAllWindows()
-        process_data(results_data, fps, fcount)
+
+        process_data(results_data, fps, avg_face=True, avg_hands=True)
