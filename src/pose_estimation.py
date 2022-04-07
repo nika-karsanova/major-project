@@ -10,10 +10,8 @@ from sklearn.cluster import KMeans
 
 from plotting import process_data
 
-pathdir = "C:/Users/welleron/Desktop/mmp/datasets/womens_sp/videos/"
-outpath = "C:/Users/welleron/Desktop/mmp/spiking/output/"
-
-sample = "C:/Users/welleron/Desktop/mmp/weekly_tasks/week7/midprojectdemo_videos/"
+pathdir = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
+outpath = "./output/pose/"
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
