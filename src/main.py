@@ -1,11 +1,21 @@
-from pose_estimation import mediapipe_blazepose_pe
-from labelling import label_videos
-from training import get_labels
-import sys
-import numpy as np
-import pandas
+from trash import test_poser
+from training import *
+import pandas as pd
+import os
+
+
+def gen_test():
+    labels_df = pd.read_csv(os.path.join("output/labels/csv", f"{1}.csv"))
+
+    if 1167 in labels_df.values:
+        print(0)
+
+    # print(labels_df.loc[labels_df['frame'] == 1167, 'category'] == 'f')
+
+    # if (labels_df.get[(labels_df['frame'] == 1167), 'category'] == 'f').item():
+    #     print(True)
+
 
 if __name__ == "__main__":
-    get_labels("C:/Users/welleron/Desktop/mmp/github/repositories/major-project/src/output/labels/csv/1.csv")
-    # label_videos()
-    # mediapipe_blazepose_pe()
+    process_data()
+    # test_poser()

@@ -3,10 +3,6 @@ from typing import NamedTuple, Any
 
 import cv2 as cv
 import mediapipe as mp
-import numpy as np
-import colorthief as ct
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
 
 from plotting import process_data
 
@@ -68,15 +64,12 @@ def mediapipe_blazepose_pe() -> None:
             image.flags.writeable = True
             image = cv.cvtColor(image, cv.COLOR_RGB2BGR)  # cause OpenCV works in BGR
 
-            """
-            Data contained within landmark array after successful pose extraction
+            """Data contained within landmark array after successful pose extraction
             
             results.pose_landmarks - NormalisedLandmarkList Type
             results.pose_landmarks.landmark - RepeatedCompositeContainer type
             results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE] - NormalizedLandmark Type
-            mp_pose.POSE_CONNECTIONS - Dict, containing connections between the landmarks 
-            
-            """
+            mp_pose.POSE_CONNECTIONS - Dict, containing connections between the landmarks"""
             current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
             results_data[current_frame] = None
             if results.pose_landmarks:  # if pose estimator derived an output

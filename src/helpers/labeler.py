@@ -5,7 +5,7 @@ import cv2 as cv
 import os
 import time
 
-pathdir = "C:/Users/welleron/Desktop/mmp/datasets/womens_sp/videos/"
+pathdir = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
 
 
 def label_videos():

@@ -1,3 +1,4 @@
+import numpy
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,6 +6,7 @@ import numpy as np
 import datetime
 from random import randint
 
+from numpy import ndarray
 from pandas import DataFrame
 
 sns.set_theme(style="darkgrid",
@@ -133,8 +135,8 @@ def plot_coordinate_over_landmarks(df: DataFrame = None, name: str = None, fps: 
     plot_correlation(df_z, name="Z")
 
 
-def process_data(data: dict, fps: int = None, avg_face: bool = False,
-                 avg_hands: bool = False) -> None:
+def process_data(data: dict, fps: int = None, avg_face: bool = True,
+                 avg_hands: bool = True) -> None:
     """
     Process the pose estimator output into a DataFrame for Data Analysis
 
@@ -164,5 +166,15 @@ def process_data(data: dict, fps: int = None, avg_face: bool = False,
     if avg_hands:
         df = df.drop(df.loc[:, '17':'22'].columns, axis=1)  # drop hands landmarks columns apart from wrists
 
-    plot_coordinate_over_landmarks(df)
-    # plot_xyz_landmarks(df)
+    # df.applymap(lambda e: np.array([e.x, e.y, e.z]) if e is not None else np.nan)
+    # df_x = df.applymap(lambda e: e.x if e is not None else np.nan)
+    # falls = df_x.to_numpy()
+
+    # print(falls)
+    #
+    # is_fall = np.ones((len(falls),), dtype=int)
+    #
+    # return falls, is_fall
+
+    # plot_coordinate_over_landmarks(df)
+    plot_xyz_landmarks(df)
