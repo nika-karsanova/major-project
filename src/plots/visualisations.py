@@ -1,17 +1,16 @@
-import numpy
-import seaborn as sns
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
 import datetime
 from random import randint
 
-from numpy import ndarray
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from pandas import DataFrame
 
 sns.set_theme(style="darkgrid",
               palette="deep",
               color_codes=True)
+
 
 # plt.style.use("seaborn")
 

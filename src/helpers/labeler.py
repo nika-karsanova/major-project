@@ -1,9 +1,9 @@
 import sys
+import time
 
-import pandas as pd
 import cv2 as cv
 import os
-import time
+from helpers import assist_func, constants
 
 pathdir = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
 
@@ -29,32 +29,9 @@ def label_videos():
             current_fps = int(1 / (c_time - p_time))
             p_time = c_time
 
-            cv.putText(frame,  # frame
-                       str(current_frame),  # actual text
-                       (50, 50),  # left corner
-                       cv.FONT_HERSHEY_SIMPLEX,
-                       1.0,  # size
-                       (255, 255, 255),  # colour
-                       2,  # thickness
-                       cv.LINE_AA)
-
-            cv.putText(frame,  # frame
-                       str(current_fps),  # actual text
-                       (50, 100),  # left corner
-                       cv.FONT_HERSHEY_SIMPLEX,
-                       1.0,  # size
-                       (0, 0, 0),  # colour
-                       2,  # thickness
-                       cv.LINE_AA)
-
-            cv.putText(frame,  # frame
-                       str(int(cap.get(cv.CAP_PROP_FRAME_COUNT))),  # actual text
-                       (50, 150),  # left corner
-                       cv.FONT_HERSHEY_SIMPLEX,
-                       1.0,  # size
-                       (0, 0, 255),  # colour
-                       2,  # thickness
-                       cv.LINE_AA)
+            assist_func.annotate_video(frame, current_frame)
+            assist_func.annotate_video(frame, current_fps, constants.BLUE, constants.LEFT_CORNER2)
+            assist_func.annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), constants.RED, constants.LEFT_CORNER3)
 
             cv.imshow(f"Labelling video {video_file}", frame)
 
@@ -77,17 +54,4 @@ def label_videos():
 
         cap.release()
         cv.destroyAllWindows()
-        output_labels(data, video)
-
-
-def output_labels(data, video, overwrite=False) -> None:
-    outpath_csv = "./output/labels/csv"
-    filename = f"{video}.csv"
-
-    os.makedirs(outpath_csv, exist_ok=True)
-    outfile = os.path.join(outpath_csv, filename)
-
-    labels_df = pd.DataFrame(data=data)
-
-    if not labels_df.empty and (not os.path.isfile(outfile) or overwrite):
-        labels_df.to_csv(outfile, index=False)
+        assist_func.output_labels(data, video)

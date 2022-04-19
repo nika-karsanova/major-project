@@ -1,21 +1,40 @@
-from trash import test_poser
-from training import *
-import pandas as pd
-import os
+import argparse
+from model import testing, training
 
 
-def gen_test():
-    labels_df = pd.read_csv(os.path.join("output/labels/csv", f"{1}.csv"))
+def main(training_data=None, model_selection=None, mode_selection=None, filename=None):
+    if training_data is not None:
+        #  training.prepare_data(train, labels)
+        pass
 
-    if 1167 in labels_df.values:
-        print(0)
+    if model_selection is not None:
+        # load a specific model
+        pass
 
-    # print(labels_df.loc[labels_df['frame'] == 1167, 'category'] == 'f')
+    # load a model used by default
 
-    # if (labels_df.get[(labels_df['frame'] == 1167), 'category'] == 'f').item():
-    #     print(True)
+    if mode_selection is None or mode_selection == "video_analysis":
+        testing.classify_video(filename)
 
 
 if __name__ == "__main__":
-    process_data()
-    # test_poser()
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument("-train_data", help="Path to the training data, if want to retrain a model")
+    parser.add_argument("-model_choice", help="Specify a model to load, loads default otherwise")
+    parser.add_argument("-mode", help="Test labeling functionality or plotting, defaults to video analysis")
+    parser.add_argument("-video", help="Path to a video for analysis")
+
+    args = parser.parse_args()
+
+    train_data = args.train_data
+    model_choice = args.model_choice
+    mode = args.mode
+    video = args.video
+
+    if not (train_data or model_choice or mode or video):
+        raise Exception("Configure the expected functionality with arguments.")
+
+    main(train_data, model_choice, mode, video)

@@ -49,7 +49,7 @@ def test_poser():
 
     for video in range(1, 6):
         video_file = f"{video}.mp4"
-        labels_df = pd.read_csv(os.path.join("output/labels/csv", f"{video}.csv"))
+        labels_df = pd.read_csv(os.path.join("../src/output/labels/csv", f"{video}.csv"))
 
         cap = cv.VideoCapture(os.path.join(pathdir, video_file))
         width: int = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
