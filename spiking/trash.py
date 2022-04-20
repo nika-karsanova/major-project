@@ -161,6 +161,21 @@ def test_poser():
     # clf = RandomForestClassifier(random_state=0)
     # clf.fit(X, Y)
 
+    # ind = int(len(X) / 2)
+
+    # clf = RandomForestClassifier(random_state=0)
+    # clf.fit(X[:ind], Y[:ind])
+    #
+    # svm = make_pipeline(StandardScaler(), SVC(gamma='auto'))
+    # svm.fit(X[:ind], Y[:ind])
+
+    # tn, fp, fn, tp = confusion_matrix(Y[ind:], svm.predict(X[ind:])).ravel()
+    #
+    # print(" TN ", tn,
+    #       " FP ", fp,
+    #       " FN ", fn,
+    #       " TP ", tp)
+
     # Test per video frame
     # for video in range(1, 3):
     #     video_file = f"{video}.mp4"

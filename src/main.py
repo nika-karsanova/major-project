@@ -1,5 +1,9 @@
 import argparse
 from model import testing, training
+import os
+import cv2 as cv
+from classes import pose
+import pandas as pd
 
 
 def main(training_data=None, model_selection=None, mode_selection=None, filename=None):
@@ -33,8 +37,13 @@ if __name__ == "__main__":
     model_choice = args.model_choice
     mode = args.mode
     video = args.video
+    #
+    # if not (fvs or model_choice or mode or video):
+    #     raise Exception("Configure the expected functionality with arguments.")
 
-    if not (train_data or model_choice or mode or video):
-        raise Exception("Configure the expected functionality with arguments.")
+    # main(train_data, model_choice, mode, video)
 
-    main(train_data, model_choice, mode, video)
+    df = pd.read_csv("output/labels/csv/1.csv")
+    df2 = df.loc[(df['frame'] == 1000), 'category'] == 'z'
+    tn = 0
+    print(tn)

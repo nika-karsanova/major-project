@@ -11,3 +11,7 @@ LEFT_CORNER2 = (50, 100)
 LEFT_CORNER3 = (50, 150)
 LEFT_CORNER4 = (50, 200)
 LEFT_CORNER5 = (50, 250)
+
+"""Paths to directories"""
+PATHDIR = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
+LABDIR = "output/labels/csv/"

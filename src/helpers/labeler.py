@@ -5,53 +5,47 @@ import cv2 as cv
 import os
 from helpers import assist_func, constants
 
-pathdir = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
 
+def label_videos(filename: str):
+    cap = cv.VideoCapture(filename)
 
-def label_videos():
-    for video in range(17, 21):
+    data = []
 
-        video_file = f"{video}.mp4"
-        cap = cv.VideoCapture(os.path.join(pathdir, video_file))
+    while cap.isOpened():
+        success, frame = cap.read()
 
-        p_time = 0
-        data = []
+        if not success:
+            break
 
-        while cap.isOpened():
-            success, frame = cap.read()
+        current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
 
-            if not success:
-                break
+        assist_func.annotate_video(frame, current_frame)
+        assist_func.annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), constants.RED, constants.LEFT_CORNER2)
 
-            current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
+        cv.imshow(f"Labelling video {os.path.basename(filename)}", frame)
 
-            c_time = time.time()
-            current_fps = int(1 / (c_time - p_time))
-            p_time = c_time
+        k = cv.waitKey(0) & 0xFF
 
-            assist_func.annotate_video(frame, current_frame)
-            assist_func.annotate_video(frame, current_fps, constants.BLUE, constants.LEFT_CORNER2)
-            assist_func.annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), constants.RED, constants.LEFT_CORNER3)
+        if k == ord("n"):
+            break  # go to next video
 
-            cv.imshow(f"Labelling video {video_file}", frame)
+        elif k == ord("c"):
+            continue  # next frame
 
-            k = cv.waitKey(0) & 0xFF
+        elif k == ord("q"):
+            sys.exit()  # quit program
 
-            if k == ord("n"):
-                break
-            elif k == ord("c"):
-                continue
-            elif k == ord("q"):
-                sys.exit()
-            elif k == ord("s") or k == ord("f") or k == ord("z"):
-                x = {
-                    "frame": current_frame,
-                    "filename": video_file,
-                    "category": chr(k),
-                }
+        elif k == ord("s") or k == ord("f") or k == ord("z"):  # add a label to dict
 
-                data.append(x)
+            x = {
+                "frame": current_frame,
+                "filename": os.path.basename(filename),
+                "category": chr(k),
+            }
 
-        cap.release()
-        cv.destroyAllWindows()
-        assist_func.output_labels(data, video)
+            data.append(x)
+
+    cap.release()
+    cv.destroyAllWindows()
+
+    assist_func.output_labels(data, os.path.basename(filename)[:1])

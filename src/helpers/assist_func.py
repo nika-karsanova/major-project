@@ -1,5 +1,5 @@
 """Contains assist functions used throughout the projects for various applications. For example, output of labels from
-the labeler, persistence of the models and such. """
+the labeler, persistence of the ml and such. """
 
 import os
 
