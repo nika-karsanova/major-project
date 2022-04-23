@@ -4,21 +4,39 @@ import os
 import cv2 as cv
 from classes import pose
 import pandas as pd
+from helpers import output_func, constants, labeler
 
 
-def main(training_data=None, model_selection=None, mode_selection=None, filename=None):
-    if training_data is not None:
-        #  training.prepare_data(train, labels)
+def files_to_label(path):
+    if os.path.isdir(path):
+        labeler.label_videos(path)
+
+    elif os.path.isfile(path):
+        for file in os.listdir(path):
+            if file.endswith(".mp4"):
+                labeler.label_videos(os.path.join(path, file))
+
+    else:
+        raise FileNotFoundError("Couldn't identify path provided. Please check whether the path is valid.")
+
+
+def handle_non_default_modes(mode: str, path: str):
+    if mode == "labelling":
+        files_to_label(path)
+
+    # elif mode == "plotting":
+    #     pass
+
+    elif mode == "pose":
         pass
 
-    if model_selection is not None:
-        # load a specific model
+    elif mode == "retrain":
         pass
 
-    # load a model used by default
 
-    if mode_selection is None or mode_selection == "video_analysis":
-        testing.classify_video(filename)
+def main(path: str = None, mode: str = None):
+    if mode is not None:
+        handle_non_default_modes(mode, path)
 
 
 if __name__ == "__main__":
@@ -26,24 +44,27 @@ if __name__ == "__main__":
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument("-train_data", help="Path to the training data, if want to retrain a model")
-    parser.add_argument("-model_choice", help="Specify a model to load, loads default otherwise")
-    parser.add_argument("-mode", help="Test labeling functionality or plotting, defaults to video analysis")
-    parser.add_argument("-video", help="Path to a video for analysis")
+    parser.add_argument("-mode", help="Test labelling, video plotting, collect pose landmarks for data, retrain models "
+                                      "or run video analysis. Defaults to video analysis."
+                                      "Don\'t forget to provide video to analyse. ")
+
+    parser.add_argument("-model", help="Choose what model to load. If not provided, loads default ones. ")
+
+    parser.add_argument("-train_data", type=str, help="Path to the training data file, if want to retrain a model. ")
+
+    parser.add_argument("-path", type=str, help="Path to a video for analysis, or labelling and such. "
+                                                "A directory of videos can be provided alternatively.")
 
     args = parser.parse_args()
 
-    train_data = args.train_data
-    model_choice = args.model_choice
-    mode = args.mode
-    video = args.video
-    #
-    # if not (fvs or model_choice or mode or video):
+    # mode = args.mode
+    # train_data = args.train_data
+    # model = args.model_choice
+    # video = args.video
+
+    # if not (train_data or model or mode or video):
     #     raise Exception("Configure the expected functionality with arguments.")
 
     # main(train_data, model_choice, mode, video)
 
-    df = pd.read_csv("output/labels/csv/1.csv")
-    df2 = df.loc[(df['frame'] == 1000), 'category'] == 'z'
-    tn = 0
-    print(tn)
+    # training.data_accumulator('f')

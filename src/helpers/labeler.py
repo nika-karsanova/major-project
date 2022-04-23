@@ -3,11 +3,13 @@ import time
 
 import cv2 as cv
 import os
-from helpers import assist_func, constants
+from helpers import output_func, constants
 
 
-def label_videos(filename: str):
-    cap = cv.VideoCapture(filename)
+def label_videos(filepath: str):
+    """Function used as a labelling helper for assigning and saving labels from a video played using OpenCV into a
+    CSV file """
+    cap = cv.VideoCapture(filepath)
 
     data = []
 
@@ -19,10 +21,10 @@ def label_videos(filename: str):
 
         current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
 
-        assist_func.annotate_video(frame, current_frame)
-        assist_func.annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), constants.RED, constants.LEFT_CORNER2)
+        output_func.annotate_video(frame, current_frame)
+        output_func.annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), constants.RED, constants.LEFT_CORNER2)
 
-        cv.imshow(f"Labelling video {os.path.basename(filename)}", frame)
+        cv.imshow(f"Labelling video {os.path.basename(filepath)}", frame)
 
         k = cv.waitKey(0) & 0xFF
 
@@ -39,7 +41,7 @@ def label_videos(filename: str):
 
             x = {
                 "frame": current_frame,
-                "filename": os.path.basename(filename),
+                "filename": os.path.basename(filepath),
                 "category": chr(k),
             }
 
@@ -48,4 +50,4 @@ def label_videos(filename: str):
     cap.release()
     cv.destroyAllWindows()
 
-    assist_func.output_labels(data, os.path.basename(filename)[:1])
+    output_func.save_labels_csv(data, os.path.basename(filepath)[:-4])

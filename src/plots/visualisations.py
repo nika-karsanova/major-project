@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from pandas import DataFrame
+from helpers import constants
 
 sns.set_theme(style="darkgrid",
               palette="deep",
@@ -31,16 +32,16 @@ def plot_correlation(df: DataFrame = None, name: str = None) -> None:
     :param name: the title to give to the plot
     :return:
     """
-    # print(f"Following is a Correlation Matrix for {name} \n"
-    #       f"{df.corr()} \n")
+    print(f"Following is a Correlation Matrix for {name} \n"
+          f"{df.corr()} \n")
 
-    # fig, ax = plt.subplots()
-    # ax.matshow(df.corr())
-    # ax.set(title=f"Correlation Matrix {name}")
-    # savepath = f"C:\\Users\\welleron\\Desktop\\uni_misc\\lovelace_colloq\\poster_materials\\"
-    # fname = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-    # fig.savefig(transparent=True, fname=savepath + fname + f".png")
-    # fig.show()
+    fig, ax = plt.subplots()
+    ax.matshow(df.corr())
+    ax.set(title=f"Correlation Matrix {name}")
+    savepath = constants.GRAPHDIR
+    fname = datetime.datetime.now().strftime("%y%m%d_%H%M%S") + "_" + str(randint(0, 100))
+    fig.show()
+    fig.savefig(transparent=True, fname=savepath + fname + f".png")
     # plt.close()
 
 
@@ -74,7 +75,7 @@ def multiline_plot(title: str = None, fps: int = None, **kwargs: [str, DataFrame
                       bbox_to_anchor=(1.11, 0.5),
                       )
 
-            savepath = f"C:\\Users\\welleron\\Desktop\\uni_misc\\lovelace_colloq\\poster_materials\\"
+            savepath = constants.GRAPHDIR
             fname = datetime.datetime.now().strftime("%y%m%d_%H%M%S") + "_" + str(randint(0, 100))
             fig.show()
             fig.savefig(transparent=True, fname=savepath + fname + f".png", dpi=fig.dpi)
@@ -165,15 +166,5 @@ def process_data(data: dict, fps: int = None, avg_face: bool = True,
     if avg_hands:
         df = df.drop(df.loc[:, '17':'22'].columns, axis=1)  # drop hands landmarks columns apart from wrists
 
-    # df.applymap(lambda e: np.array([e.x, e.y, e.z]) if e is not None else np.nan)
-    # df_x = df.applymap(lambda e: e.x if e is not None else np.nan)
-    # falls = df_x.to_numpy()
-
-    # print(falls)
-    #
-    # is_fall = np.ones((len(falls),), dtype=int)
-    #
-    # return falls, is_fall
-
-    # plot_coordinate_over_landmarks(df)
+    plot_coordinate_over_landmarks(df)
     plot_xyz_landmarks(df)

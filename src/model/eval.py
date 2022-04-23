@@ -12,17 +12,18 @@ def labelled_data_evaluation(true_labels, preds):
         f"FN {fn} ({fn / n_samples:.2f})",
         f"TP {tp} ({tp / n_samples:.2f})",
 
-        f"TPR, Sensitivity {tp / (tp + fn):.2f}"  # True Positive Rate
-        f"FNR {tn / (tp + fn):.2f}"  # False Negative Rate
-        f"TNR, Specificity {tn / (tn + fp):.2f}"  # True Negative Rate
-        f"FPR {fp / (tn + fp):.2f}"  # False Positive Rate
+        f"TPR, Sensitivity {tp / (tp + fn):.2f}",  # True Positive Rate
+        f"FNR {tn / (tp + fn):.2f}",  # False Negative Rate
+        f"TNR, Specificity {tn / (tn + fp):.2f}",  # True Negative Rate
+        f"FPR {fp / (tn + fp):.2f}",  # False Positive Rate
         
         f"Positive Predictive Value, Precision {tp / (tp + fp):.2f}",
         f"False Discovery Rate {fp / (tp + fp):.2f}",
         f"Negative Predictive Value {tn / (tn + fn):.2f}",
-        f"False omission Rate {fn / (tn + fn):.2f}",
+        f"False Omission Rate {fn / (tn + fn):.2f}",
 
         f"AUC ",
         f"ROC ",
+        f"___",
 
     ]))

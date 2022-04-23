@@ -13,5 +13,9 @@ LEFT_CORNER4 = (50, 200)
 LEFT_CORNER5 = (50, 250)
 
 """Paths to directories"""
-PATHDIR = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
+FSVPATH = "C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/"
 LABDIR = "output/labels/csv/"
+FVSDIR = "output/ml/fvs/"
+MLDIR = "output/ml/models/"
+GRAPHDIR = "output/graphs/"
+POSEDIR = "output/pose/"
