@@ -5,11 +5,12 @@ from helpers import *
 from plots import visualisations
 
 
-def classify_video(filepath: str, model, plotting: bool = False, to_save: bool = False):
+def classify_video(filepath: str, models, plotting: bool = False, to_save: bool = False):
     """Function called when a video is submitted to be analysed via the CLI. Uses models that have been saved and loaded
     in for prediction as opposed to training one in-real-time."""
     cap = cv.VideoCapture(filepath)
     detector = pose.PoseEstimator()
+    # TODO: models is a tuple, unpack into fall_clf and spin_clf (or whatever else the implementation will end up being)
 
     p_time = 0
 
@@ -47,7 +48,7 @@ def classify_video(filepath: str, model, plotting: bool = False, to_save: bool =
         current_fps = int(1 / (c_time - p_time))
         p_time = c_time
 
-        annotate_video(img, model.predict(curr))
+        # annotate_video(img, model.predict(curr))
         # annotate_video(img, svm.predict(curr), location=constants.LEFT_CORNER2, colour=constants.RED)
         annotate_video(img, current_fps, location=constants.LEFT_CORNER3)
 

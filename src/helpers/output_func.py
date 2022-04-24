@@ -9,6 +9,7 @@ import pandas as pd
 from helpers import constants
 import pickle
 import traceback
+import numpy as np
 
 
 def save_labels_csv(data, video, overwrite=False) -> None:
@@ -60,21 +61,22 @@ def load_model(filename: str):
         traceback.print_exc()
 
 
-def save_fvs(fvs, labels, fvs_filename: str, labels_filename: str):
+def save_fvs(fvs, labels, filename: str):
     try:
+        store = {'fvs': fvs, 'labels': labels}
 
-        pickle.dump(fvs, open(fvs_filename, 'wb'))
-        pickle.dump(labels, open(labels_filename, 'wb'))
+        pickle.dump(store, open(filename, 'wb'))
 
     except Exception or FileNotFoundError:
-        print(f"Error occurred while saving training data to {fvs_filename} and {labels_filename}. Printing traceback...")
+        print(f"Error occurred while saving training data to {filename}. Printing traceback...")
         traceback.print_exc()
 
 
-def load_fvs(fvs_filename: str, labels_filename: str):
+def load_fvs(filename: str):
     try:
-        return pickle.load(open(fvs_filename, 'rb')), pickle.load(open(labels_filename, 'rb'))
+        return pickle.load(open(filename, 'rb'))['fvs'], pickle.load(open(filename, 'rb'))['labels']
+
     except Exception or FileNotFoundError:
         print(f"Error occurred while loading train data and labels"
-              f" from {fvs_filename} and {labels_filename}. Printing traceback... \n")
+              f" from {filename}. Printing traceback... \n")
         traceback.print_exc()

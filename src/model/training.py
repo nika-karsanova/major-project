@@ -109,8 +109,7 @@ def prepare_data(all_train_test: list, all_true_labels: list, save_fvs=False, ev
     if save_fvs and event_type is not None:
         output_func.save_fvs(X,
                              Y,
-                             os.path.join(constants.FVSDIR, f"{event_type}_train_data"),
-                             os.path.join(constants.FVSDIR, f"{event_type}_train_labels"))
+                             os.path.join(constants.FVSDIR, f"{event_type}_train_set"))
 
     return X, Y
 
