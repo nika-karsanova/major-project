@@ -1,4 +1,5 @@
 import os.path
+from typing import Any
 
 import cv2 as cv
 import numpy as np
@@ -8,34 +9,29 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from classes import pose
-from helpers import output_func, constants
-from model import eval
+from classes import PoseEstimator, da
+from helpers import save_model, save_fvs, FVSDIR, MLDIR
+from model import labelled_data_evaluation
 
 
-def data_accumulator(event_type='f') -> None:
+def setup_data_collection(path: str = None, event_type='f'):
     """A simple accumulator for all the pose estimator results from various videos used for feature extraction for the
     purpose of training Machine Learning models in FSV dataset. """
-    all_train_test, all_true_labels = [], []
 
-    for video in range(1, 21):
-        videofile = os.path.join(constants.FSVPATH, f"{video}.mp4")
-        labfile = os.path.join(constants.LABDIR, f"{video}.csv")
+    res = collect_data(path, os.path.basename(path)[:-4], event_type=event_type)
 
-        res = collect_data(videofile, labfile, event_type=event_type)
+    if res is not None:
+        video_data, video_labels = res
+        da.all_train_test.append(video_data)
+        da.all_true_labels.append(video_labels)
 
-        if res is not None:
-            video_data, video_labels = res
-            all_train_test.append(video_data)
-            all_true_labels.append(video_labels)
-
-    X, Y = prepare_data(all_train_test, all_true_labels, save_fvs=True, event_type=event_type)
+    X, Y = prepare_data(da.all_train_test, da.all_true_labels, save_data=True, event_type=event_type)
     ind = int(len(X) / 2)
 
     clf, svm = train_model(X[:ind], Y[:ind], save_models=True, event_type=event_type)
 
-    eval.labelled_data_evaluation(Y[ind:], clf.predict(X[ind:]))
-    eval.labelled_data_evaluation(Y[:ind], svm.predict(X[ind:]))
+    labelled_data_evaluation(Y[ind:], clf.predict(X[ind:]))
+    labelled_data_evaluation(Y[:ind], svm.predict(X[ind:]))
 
 
 def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, dict):
@@ -43,7 +39,7 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
     the features for the training and testing of the Machine Learning Models."""
     cap = cv.VideoCapture(videofile)
 
-    detector = pose.PoseEstimator()
+    detector = PoseEstimator()
 
     csv_labels_df = pd.read_csv(labfile)
     event_df = csv_labels_df.loc[csv_labels_df['category'] == f"{event_type}"]
@@ -87,7 +83,7 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
         return detector.model_results, per_video_labels
 
 
-def prepare_data(all_train_test: list, all_true_labels: list, save_fvs=False, event_type=None):
+def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, event_type=None):
     """Function to convert collected data into a 2D numpy array for training and testing ML models.
     Initially, Converts the list of dicts into 4D numpy array."""
 
@@ -106,10 +102,8 @@ def prepare_data(all_train_test: list, all_true_labels: list, save_fvs=False, ev
     nsamples, nx, ny, nz = X.shape
     X = X.reshape((nsamples, nx * ny * nz))
 
-    if save_fvs and event_type is not None:
-        output_func.save_fvs(X,
-                             Y,
-                             os.path.join(constants.FVSDIR, f"{event_type}_train_set"))
+    if save_data and event_type is not None:
+        save_fvs(X, Y, os.path.join(FVSDIR, f"{event_type}_train_set"))
 
     return X, Y
 
@@ -125,10 +119,8 @@ def train_model(train_set, true_labels, save_models=False, event_type=None):
     svm.fit(train_set, true_labels)
 
     if save_models and event_type is not None:
-        output_func.save_model(clf,
-                               os.path.join(constants.MLDIR, f"{event_type}_clf"))
+        save_model(clf, os.path.join(MLDIR, f"{event_type}_clf"))
 
-        output_func.save_model(svm,
-                               os.path.join(constants.MLDIR, f"{event_type}_svc"))
+        save_model(svm, os.path.join(MLDIR, f"{event_type}_svc"))
 
     return clf, svm

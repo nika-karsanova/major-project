@@ -1,3 +1,3 @@
-from model.training import *
-from model.testing import *
-from model.eval import *
+from training import *
+from testing import *
+from eval import *

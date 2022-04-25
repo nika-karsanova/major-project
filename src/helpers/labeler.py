@@ -3,7 +3,7 @@ import time
 
 import cv2 as cv
 import os
-from helpers import output_func, constants
+from helpers import save_labels_csv, annotate_video, RED, LEFT_CORNER2
 
 
 def label_videos(filepath: str):
@@ -21,8 +21,8 @@ def label_videos(filepath: str):
 
         current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
 
-        output_func.annotate_video(frame, current_frame)
-        output_func.annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), constants.RED, constants.LEFT_CORNER2)
+        annotate_video(frame, current_frame)
+        annotate_video(frame, int(cap.get(cv.CAP_PROP_FRAME_COUNT)), RED, LEFT_CORNER2)
 
         cv.imshow(f"Labelling video {os.path.basename(filepath)}", frame)
 
@@ -50,4 +50,4 @@ def label_videos(filepath: str):
     cap.release()
     cv.destroyAllWindows()
 
-    output_func.save_labels_csv(data, os.path.basename(filepath)[:-4])
+    save_labels_csv(data, os.path.basename(filepath)[:-4])

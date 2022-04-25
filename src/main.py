@@ -1,11 +1,9 @@
 import argparse
-import sys
 
 from model import testing, training
+from classes.data_accumulator import da
 import os
-import cv2 as cv
-from classes import pose
-import pandas as pd
+from classes import data_accumulator
 from helpers import output_func, constants, labeler
 
 
@@ -68,25 +66,37 @@ def check_path(path, func, models=None):
 
 
 def main(path: str, mode: str = None):
-    if mode is None or mode is 'va':
+    if mode is None or mode == 'va':
         check_path(path, analyse_video_provided, model_choice())
 
-    if mode is 'labelling':
+    if mode == 'labelling':
         check_path(path, labeler.label_videos)
 
-    if mode is 'pose':
-        check_path(path, training.data_accumulator)
+    if mode == 'pose':
+        check_path(path, classes.data_accumulator)  # needs to work with path
 
-    if mode is "retrain" and path.endswith('.pkl'):
+    if mode == "retrain" and path.endswith('.pkl'):
         train, labels = output_func.load_fvs(path)
-        training.train_model(train, labels)
+        training.train_model(train, labels)  # add filename customization
 
     else:
         raise FileNotFoundError("Pickle file was not provided. Provide a pickle file and repeat.")
 
 
+def verify_event_type_query():
+    valid = {'s': 's', 'spin': 's', 'f': 'f', 'fall': 'f'}
+
+    while True:
+        answer = input("Enter your choice: ").lower()
+        if answer in valid:
+            return valid[answer]
+        else:
+            print(f"Please respond with fall or spin (f or s). \n")
+
+
 def custom_filename(obj: str = 'data'):
     return input(f"Provide filename for the {obj}: ").lower()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -109,3 +119,39 @@ if __name__ == "__main__":
     #     raise Exception("Provide path to a file or directory.")
 
     # main(mode, path)
+
+    # all_train_test.append(1)
+    # all_true_labels.append(True)
+    #
+    # print(all_train_test, all_true_labels)
+    # all_train_test, all_true_labels = [], []
+    #
+    # print(all_train_test, all_true_labels)
+    da.all_true_labels.append(1)
+    da.all_train_test.append(2)
+    da.all_true_labels.append(3)
+    da.all_train_test.append(4)
+    print(da.all_true_labels)
+    print(da.all_train_test)
+
+    da.empty_dataset()
+
+    print(da)
+    print(da.all_true_labels, da.all_train_test,)
+
+    da.all_true_labels.append(5)
+    da.all_train_test.append(6)
+
+    mainsample = data_accumulator.DataAccumulator()
+    print(mainsample)
+    print("\n", mainsample.all_true_labels, mainsample.all_train_test)
+    print(da.all_true_labels, da.all_train_test, )
+
+    mainsample.empty_dataset()
+    print( da.all_true_labels, da.all_train_test,)
+    print(mainsample.all_true_labels, mainsample.all_train_test)
+
+    mainsample.all_train_test.append(10)
+    print(da.all_train_test)
+    da.all_train_test = []
+    print(mainsample.all_train_test)
