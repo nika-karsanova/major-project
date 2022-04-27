@@ -7,6 +7,7 @@ def labelled_data_evaluation(true_labels, preds):
     n_samples = len(true_labels)
 
     print("\n".join([
+        f"___",
         f"TN {tn} ({tn / n_samples:.2f})",
         f"FP {fp} ({fp / n_samples:.2f})",
         f"FN {fn} ({fn / n_samples:.2f})",

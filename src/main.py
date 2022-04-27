@@ -1,10 +1,12 @@
 import argparse
+import math
 
 from model import testing, training
-from classes.data_accumulator import da
 import os
-from classes import data_accumulator
 from helpers import output_func, constants, labeler
+from classes import da
+import logging
+import sys
 
 
 def model_choice():
@@ -49,8 +51,74 @@ def analyse_video_provided(path, models):
     testing.classify_video(path, models, plotting=plot, to_save=writer)
 
 
+def setup_data_collection(path: str):
+    # print(f"What event type do you want to collect feature vectors for? Fall/Spin")
+    # event = verify_event_type_query()
+
+    def detail_query():
+        filename: str = os.path.basename(path)[:-4]
+
+        print(f"Would you like to prep to process the data for training? Yes/No")
+        data_prep = verify_yes_no_query()
+
+        if data_prep:
+            print(f"Would you like to save the resulting dataset? Yes/No. "
+                  f"If yes, the accumulated landmarks so far will be removed from memory and be saved to a file. ")
+            save_data = verify_yes_no_query()
+
+            if save_data:
+                filename = custom_filename('train and label set')
+
+            X, Y = training.prepare_data(all_train_test=da.all_train_test,
+                                         all_true_labels=da.all_true_labels,
+                                         save_data=save_data,
+                                         filename=filename)
+
+            print(f"Would you like to retrain models with new dataset? Yes/No")
+            tt = verify_yes_no_query()
+
+            if tt:
+                setup_model_retraining(X, Y)
+
+    isfile, isdir, video = os.path.isfile(path), os.path.isdir(path), (path.endswith(".mp4") or path.endswith('mov'))
+
+    if isfile and video:
+        training.data_collection(path)
+        detail_query()
+
+    elif isdir:
+        for idx, file in enumerate(os.listdir(path)):
+            if file.endswith('mp4') or file.endswith('mov'):
+                training.data_collection(os.path.join(path, file))
+
+                if idx + 1 == len(os.listdir(path)):
+                    detail_query()
+
+    else:
+        logging.exception("\nCouldn't identify path provided. Please check whether the path is valid.\n")
+
+
+def setup_model_retraining(data, labels):
+    evaluate = False
+    print(f"Would you like to split the data into train and test for evaluation?")
+    split = verify_yes_no_query()
+
+    if split:
+        print(f"Would you like to evaluate retrained models? Yes/No")
+        evaluate = verify_yes_no_query()
+
+    print(f"Would you like to save the retrained models? Yes/No")
+    save_models = verify_yes_no_query()
+
+    filename = 'default'
+    if save_models is True:
+        filename = custom_filename('models')
+
+    training.train_model(data, labels, save_models, filename, split, evaluate)
+
+
 def check_path(path, func, models=None):
-    isfile, isdir, video = os.path.isfile(path), os.path.isdir(path), path.endswith(".mp4")
+    isfile, isdir, video = os.path.isfile(path), os.path.isdir(path), (path.endswith(".mp4") or path.endswith('mov'))
     f = lambda a, b: func(a, b) if b is not None else func(a)
 
     if isfile and video:
@@ -58,29 +126,36 @@ def check_path(path, func, models=None):
 
     elif isdir:
         for file in os.listdir(path):
-            if file.endswith('mp4'):
+            if file.endswith('mp4') or file.endswith('mov'):
                 f(os.path.join(path, file), models)
 
     else:
-        raise FileNotFoundError("Couldn't identify path provided. Please check whether the path is valid.")
+        print("\nCouldn't identify path provided. Please check whether the path is valid.\n")
 
 
 def main(path: str, mode: str = None):
-    if mode is None or mode == 'va':
+    if mode is None or mode == 'v':  # video analysis
         check_path(path, analyse_video_provided, model_choice())
 
-    if mode == 'labelling':
+    elif mode == 'l':  # labelling
         check_path(path, labeler.label_videos)
 
-    if mode == 'pose':
-        check_path(path, classes.data_accumulator)  # needs to work with path
+    elif mode == 'p':  # collect pose landmarks
+        print(len(da.all_train_test), len(da.all_true_labels))
+        setup_data_collection(path)
 
-    if mode == "retrain" and path.endswith('.pkl'):
-        train, labels = output_func.load_fvs(path)
-        training.train_model(train, labels)  # add filename customization
+    elif mode == "t" and path.endswith('.pkl'):  # retrain model with a given fvs file
+        res = output_func.load_fvs(path)
+
+        if res is not None:
+            train, labels = res
+            setup_model_retraining(train, labels)
+
+    elif mode == 't' and not path.endswith('.pkl'):
+        print("\nPickle file was not provided. Provide a pickle file and repeat.\n")
 
     else:
-        raise FileNotFoundError("Pickle file was not provided. Provide a pickle file and repeat.")
+        print("\nNo such mode, try again.\n")
 
 
 def verify_event_type_query():
@@ -103,55 +178,46 @@ if __name__ == "__main__":
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument("-mode", help="Test labelling, collect pose landmarks from data, retrain models "
-                                      "or run video analysis. Defaults to video analysis."
+    parser.add_argument("-mode", help="Test labelling - l, "
+                                      "collect pose landmarks from data and train a model - p, "
+                                      "retrain models - t "
+                                      "or run video analysis - v. Defaults to video analysis."
                                       "Don\'t forget to provide path to relevant files. ")
 
-    parser.add_argument("-path", type=str, help="For example, path to a video for analysis. "
-                                                "Alternatively, pickled numpy training  data.")
+    parser.add_argument("-path", type=str, help="Provide a path to a file or directory with videos "
+                                                "for labelling, analysis or feature extraction."
+                                                "Alternatively, provide pickled numpy training data "
+                                                "for model retraining.")
 
     args = parser.parse_args()
 
-    mode = args.mode
-    path = args.path
+    # mode = args.mode
+    # path = args.path
 
     # if not path:
     #     raise Exception("Provide path to a file or directory.")
-
+    #
     # main(mode, path)
 
-    # all_train_test.append(1)
-    # all_true_labels.append(True)
-    #
-    # print(all_train_test, all_true_labels)
-    # all_train_test, all_true_labels = [], []
-    #
-    # print(all_train_test, all_true_labels)
-    da.all_true_labels.append(1)
-    da.all_train_test.append(2)
-    da.all_true_labels.append(3)
-    da.all_train_test.append(4)
-    print(da.all_true_labels)
-    print(da.all_train_test)
+    while True:
+        print(f"Welcome to the main menu of Event Recognition Application. What would you like to do?\n")
 
-    da.empty_dataset()
+        print("\n".join([
+            "l - label some videos. ",
+            "p - collect landmarks from the videos for train data. ",
+            "t - retrain available models. ",
+            "v - run video analysis.",
+            "q - quit. note, that the unsaved landmarks in memory will be lost. ",
+        ]))
 
-    print(da)
-    print(da.all_true_labels, da.all_train_test,)
+        mode = str(input(f"\nChoose an option to do: ").lower())
 
-    da.all_true_labels.append(5)
-    da.all_train_test.append(6)
+        if mode == 'q':
+            print("Thanks for using this program. Goodbye!")
+            exit()
 
-    mainsample = data_accumulator.DataAccumulator()
-    print(mainsample)
-    print("\n", mainsample.all_true_labels, mainsample.all_train_test)
-    print(da.all_true_labels, da.all_train_test, )
+        path = str(input(f"Provide path to a relevant file or directory (e.g., video): "))
 
-    mainsample.empty_dataset()
-    print( da.all_true_labels, da.all_train_test,)
-    print(mainsample.all_true_labels, mainsample.all_train_test)
+        main(mode=mode, path=path)
 
-    mainsample.all_train_test.append(10)
-    print(da.all_train_test)
-    da.all_train_test = []
-    print(mainsample.all_train_test)
+        # main(mode='p', path="C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/21.mp4")

@@ -9,29 +9,23 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from classes import PoseEstimator, da
-from helpers import save_model, save_fvs, FVSDIR, MLDIR
-from model import labelled_data_evaluation
+from classes import pose, da
+from helpers import output_func, constants
+from model import eval
 
 
-def setup_data_collection(path: str = None, event_type='f'):
+def data_collection(path: str, event_type='f'):
     """A simple accumulator for all the pose estimator results from various videos used for feature extraction for the
     purpose of training Machine Learning models in FSV dataset. """
 
-    res = collect_data(path, os.path.basename(path)[:-4], event_type=event_type)
+    res = collect_data(path,
+                       os.path.join(constants.LABDIR, f"{os.path.basename(path)[:-4]}.csv"),
+                       event_type=event_type)
 
     if res is not None:
         video_data, video_labels = res
         da.all_train_test.append(video_data)
         da.all_true_labels.append(video_labels)
-
-    X, Y = prepare_data(da.all_train_test, da.all_true_labels, save_data=True, event_type=event_type)
-    ind = int(len(X) / 2)
-
-    clf, svm = train_model(X[:ind], Y[:ind], save_models=True, event_type=event_type)
-
-    labelled_data_evaluation(Y[ind:], clf.predict(X[ind:]))
-    labelled_data_evaluation(Y[:ind], svm.predict(X[ind:]))
 
 
 def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, dict):
@@ -39,7 +33,11 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
     the features for the training and testing of the Machine Learning Models."""
     cap = cv.VideoCapture(videofile)
 
-    detector = PoseEstimator()
+    detector = pose.PoseEstimator()
+
+    if not os.path.isfile(labfile):
+        print(f"No label file was found at {labfile}. Attempting to load next video... ")
+        return
 
     csv_labels_df = pd.read_csv(labfile)
     event_df = csv_labels_df.loc[csv_labels_df['category'] == f"{event_type}"]
@@ -83,7 +81,7 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
         return detector.model_results, per_video_labels
 
 
-def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, event_type=None):
+def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, filename='default'):
     """Function to convert collected data into a 2D numpy array for training and testing ML models.
     Initially, Converts the list of dicts into 4D numpy array."""
 
@@ -102,25 +100,37 @@ def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, e
     nsamples, nx, ny, nz = X.shape
     X = X.reshape((nsamples, nx * ny * nz))
 
-    if save_data and event_type is not None:
-        save_fvs(X, Y, os.path.join(FVSDIR, f"{event_type}_train_set"))
+    if save_data:
+        output_func.save_fvs(X, Y, os.path.join(constants.FVSDIR, f"{filename}_train_set.pkl"))
+        da.empty_dataset()
 
     return X, Y
 
 
-def train_model(train_set, true_labels, save_models=False, event_type=None):
+def train_model(X, Y, save_models=False, filename='default', split=True, evaluate=True):
     """Function that handles training of selected models to perform element classification. Most of the models
     used are accessible through the sklearn Machine Learning library. """
 
+    train_set, train_labels = X, Y
+    test_set, test_labels = None, None
+
+    if split:
+        ind = int(len(X) / 2)
+        train_set, train_labels = X[:ind], Y[:ind]
+        test_set, test_labels = X[ind:], Y[ind:]
+
     clf = RandomForestClassifier(random_state=0)
-    clf.fit(train_set, true_labels)
+    clf.fit(train_set, train_labels)
 
     svm = make_pipeline(StandardScaler(), SVC(gamma='auto'))
-    svm.fit(train_set, true_labels)
+    svm.fit(train_set, train_labels)
 
-    if save_models and event_type is not None:
-        save_model(clf, os.path.join(MLDIR, f"{event_type}_clf"))
+    if evaluate and (test_set, test_labels) is not None:
+        eval.labelled_data_evaluation(test_labels, clf.predict(test_set))
+        eval.labelled_data_evaluation(test_labels, svm.predict(test_set))
 
-        save_model(svm, os.path.join(MLDIR, f"{event_type}_svc"))
+    if save_models:
+        output_func.save_model(clf, os.path.join(constants.MLDIR, f"{filename}_clf.pkl"))
+        output_func.save_model(svm, os.path.join(constants.MLDIR, f"{filename}_svc.pkl"))
 
     return clf, svm

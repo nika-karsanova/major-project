@@ -6,7 +6,7 @@ import os
 import cv2 as cv
 import pandas as pd
 
-from helpers import BLACK, LEFT_CORNER1
+from helpers import constants
 import pickle
 import traceback
 import numpy as np
@@ -14,11 +14,10 @@ import numpy as np
 
 def save_labels_csv(data, video, overwrite=False) -> None:
     """Function to output the labels one can generate through the utilization of the labeler class."""
-    outpath_csv = "./output/labels/csv/"
     filename = f"{video}.csv"
 
-    os.makedirs(outpath_csv, exist_ok=True)
-    outfile = os.path.join(outpath_csv, filename)
+    os.makedirs(constants.LABDIR, exist_ok=True)
+    outfile = os.path.join(constants.LABDIR, filename)
 
     labels_df = pd.DataFrame(data=data)
 
@@ -26,7 +25,7 @@ def save_labels_csv(data, video, overwrite=False) -> None:
         labels_df.to_csv(outfile, index=False)
 
 
-def annotate_video(image, text, colour=BLACK, location=LEFT_CORNER1):
+def annotate_video(image, text, colour=constants.BLACK, location=constants.LEFT_CORNER1):
     """Function to annotate videos in OpenCV, makes use of constants for colours and locations initialized in
     constants.py file. """
     cv.putText(image,  # frame
@@ -45,7 +44,7 @@ def save_model(model, filename: str):
     try:
         pickle.dump(model, open(filename, 'wb'))
 
-    except Exception or FileNotFoundError:
+    except:
         print(f"Error occurred while saving model to {filename}. Printing traceback... \n")
         traceback.print_exc()
 
@@ -56,7 +55,7 @@ def load_model(filename: str):
     try:
         return pickle.load(open(filename, 'rb'))
 
-    except Exception or FileNotFoundError:
+    except:
         print(f"Error occurred while loading a model from {filename}. Printing traceback... \n")
         traceback.print_exc()
 
@@ -67,7 +66,7 @@ def save_fvs(fvs, labels, filename: str):
 
         pickle.dump(store, open(filename, 'wb'))
 
-    except Exception or FileNotFoundError:
+    except:
         print(f"Error occurred while saving training data to {filename}. Printing traceback...")
         traceback.print_exc()
 
@@ -76,7 +75,7 @@ def load_fvs(filename: str):
     try:
         return pickle.load(open(filename, 'rb'))['fvs'], pickle.load(open(filename, 'rb'))['labels']
 
-    except Exception or FileNotFoundError:
+    except:
         print(f"Error occurred while loading train data and labels"
               f" from {filename}. Printing traceback... \n")
         traceback.print_exc()

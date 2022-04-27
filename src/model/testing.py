@@ -3,16 +3,16 @@ import cv2 as cv
 import os
 import time
 
-from classes import PoseEstimator
-from helpers import POSEDIR, LEFT_CORNER3, annotate_video
-from plots import process_data
+from classes import pose
+from helpers import constants, output_func
+from plots import visualisations
 
 
 def classify_video(filepath: str, models, plotting: bool = False, to_save: bool = False):
     """Function called when a video is submitted to be analysed via the CLI. Uses models that have been saved and loaded
     in for prediction as opposed to training one in-real-time."""
     cap = cv.VideoCapture(filepath)
-    detector = PoseEstimator()
+    detector = pose.PoseEstimator()
     # TODO: models is a tuple, unpack into fall_clf and spin_clf (or whatever else the implementation will end up being)
 
     p_time = 0
@@ -21,7 +21,7 @@ def classify_video(filepath: str, models, plotting: bool = False, to_save: bool 
     height: int = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
     fps: int = int(cap.get(cv.CAP_PROP_FPS))
 
-    writer = cv.VideoWriter(os.path.join(POSEDIR, f"{os.path.basename(filepath)[:-4]}.mp4v"),
+    writer = cv.VideoWriter(os.path.join(constants.POSEDIR, f"{os.path.basename(filepath)[:-4]}.mp4v"),
                             cv.VideoWriter_fourcc("P", "I", "M", "1"),  # MPEG-1 codec used for video
                             fps,
                             (width, height),
@@ -53,7 +53,7 @@ def classify_video(filepath: str, models, plotting: bool = False, to_save: bool 
 
         # annotate_video(img, model.predict(curr))
         # annotate_video(img, svm.predict(curr), location=constants.LEFT_CORNER2, colour=constants.RED)
-        annotate_video(img, current_fps, location=LEFT_CORNER3)
+        output_func.annotate_video(img, current_fps, location=constants.LEFT_CORNER3)
 
         if to_save:
             writer.write(img)
@@ -68,4 +68,4 @@ def classify_video(filepath: str, models, plotting: bool = False, to_save: bool 
     cv.destroyAllWindows()
 
     if plotting:
-        process_data(detector.video_results)
+        visualisations.process_data(detector.video_results)
