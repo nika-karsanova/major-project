@@ -10,27 +10,52 @@ import sys
 
 
 def model_choice():
+    """Loads models of choice from the persistent storage. """
+
+    to_return = []
+
     print(f"Load default models for classification? Yes/No")
 
     if verify_yes_no_query():
         fall_clf = output_func.load_model(constants.FALL_CLF)
         spin_clf = output_func.load_model(constants.SPIN_CLF)
-        return fall_clf, spin_clf
+        jump_clf = output_func.load_model(constants.JUMP_CLF)
+        return fall_clf, spin_clf, jump_clf
 
     else:
 
-        print("\n".join([f"Choose a model to load for fall detection: ",
-                         f"1 -- ",
-                         f"2 -- ",
-                         f"3 -- "]))
+        # print(f"Provide models from custom file? Yes/No. If no, you'll be offered to choose from pre-trained models.")
+        #
+        # if verify_yes_no_query():
+        #     return output_func.load_model(custom_filename('model'))
 
-        print("\n".join([f"Choose a model to load for spin detection: ",
-                         f"1 -- ",
-                         f"2 -- ",
-                         f"3 -- "]))
+        for clf in ['fall', 'spin', 'jump']:
+            print("\n".join([f"Choose a model to load for {clf} detection: ",
+                             f"1 -- RandomForestClassifier",
+                             f"2 -- Support Vector Classifier",
+                             f"3 -- Naive Bayes"]))
+
+            event_clf = output_func.load_model(model_config(f"{clf}" + "s"))
+            to_return.append(event_clf)
+
+        return tuple(to_return)
+
+
+def model_config(event: str):
+    valid = {1: f'output/ml/models/{event}_clf.pkl',
+             2: f'output/ml/models/{event}_svc.pkl',
+             3: f'output/ml/models/{event}_nb.pkl'}
+
+    while True:
+        answer = int(input("Enter your choice: "))
+        if answer in valid:
+            return valid[answer]
+        else:
+            print(f"Option out of bounds. Choose one of the given options. \n")
 
 
 def verify_yes_no_query():
+    """Simple validator for yes/no style questions. """
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
 
     while True:
@@ -41,7 +66,8 @@ def verify_yes_no_query():
             print(f"Please respond with 'yes' or 'no' ('y' or 'n'). \n")
 
 
-def analyse_video_provided(path, models):
+def analyse_video_provided(path: str, models):
+    """Sets up the requested parameters for the video analyses."""
     print(f"Would you like to plot the distribution of landmarks by landmark and by coordinate? Yes/No")
     plot = verify_yes_no_query()
 
@@ -52,6 +78,8 @@ def analyse_video_provided(path, models):
 
 
 def setup_data_collection(path: str):
+    """Sets up parameters and calls functions to set up the feature extraction pipeline. """
+
     # print(f"What event type do you want to collect feature vectors for? Fall/Spin")
     # event = verify_event_type_query()
 
@@ -95,12 +123,17 @@ def setup_data_collection(path: str):
                     detail_query()
 
     else:
-        logging.exception("\nCouldn't identify path provided. Please check whether the path is valid.\n")
+        print("\nCouldn't identify path provided. Please check whether the path is valid.\n")
+
+
+def setup_model_evaluation(data, labels, model):
+    training.eval.labelled_data_evaluation(labels, model.predict(data))
 
 
 def setup_model_retraining(data, labels):
+    """Sets up the parameters for retraining of the chosen models."""
     evaluate = False
-    print(f"Would you like to split the data into train and test for evaluation?")
+    print(f"Would you like to split the data into train and test for evaluation? Yes/No")
     split = verify_yes_no_query()
 
     if split:
@@ -117,7 +150,8 @@ def setup_model_retraining(data, labels):
     training.train_model(data, labels, save_models, filename, split, evaluate)
 
 
-def check_path(path, func, models=None):
+def check_path(path: str, func, models=None):
+    """Function that verifies whether the provided path is valid. If it is, makes the requested call."""
     isfile, isdir, video = os.path.isfile(path), os.path.isdir(path), (path.endswith(".mp4") or path.endswith('mov'))
     f = lambda a, b: func(a, b) if b is not None else func(a)
 
@@ -134,6 +168,7 @@ def check_path(path, func, models=None):
 
 
 def main(path: str, mode: str = None):
+    """Function to control the available modes. """
     if mode is None or mode == 'v':  # video analysis
         check_path(path, analyse_video_provided, model_choice())
 
@@ -141,7 +176,6 @@ def main(path: str, mode: str = None):
         check_path(path, labeler.label_videos)
 
     elif mode == 'p':  # collect pose landmarks
-        print(len(da.all_train_test), len(da.all_true_labels))
         setup_data_collection(path)
 
     elif mode == "t" and path.endswith('.pkl'):  # retrain model with a given fvs file
@@ -159,6 +193,7 @@ def main(path: str, mode: str = None):
 
 
 def verify_event_type_query():
+    """Function to verify the type of event provided. """
     valid = {'s': 's', 'spin': 's', 'f': 'f', 'fall': 'f'}
 
     while True:
@@ -170,6 +205,7 @@ def verify_event_type_query():
 
 
 def custom_filename(obj: str = 'data'):
+    """Function for the user to provide custom filenames for fvs, models and such."""
     return input(f"Provide filename for the {obj}: ").lower()
 
 
@@ -220,4 +256,4 @@ if __name__ == "__main__":
 
         main(mode=mode, path=path)
 
-        # main(mode='p', path="C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/21.mp4")
+        # main(mode='p', path="C:/Users/welleron/Desktop/mmp/datasets/fsv/videos/51.mp4")

@@ -13,6 +13,8 @@ def label_videos(filepath: str):
 
     data = []
 
+    save = True
+
     while cap.isOpened():
         success, frame = cap.read()
 
@@ -28,16 +30,14 @@ def label_videos(filepath: str):
 
         k = cv.waitKey(0) & 0xFF
 
-        if k == ord("n"):
-            break  # go to next video
+        if k == ord("q"):
+            save = False
+            break  # quit this video
 
         elif k == ord("c"):
             continue  # next frame
 
-        elif k == ord("q"):
-            sys.exit()  # quit program
-
-        elif k == ord("s") or k == ord("f") or k == ord("z"):  # add a label to dict
+        elif k == ord("s") or k == ord("f") or k == ord("z") or k == ord("j"):  # add a label to dict
 
             x = {
                 "frame": current_frame,
@@ -50,4 +50,5 @@ def label_videos(filepath: str):
     cap.release()
     cv.destroyAllWindows()
 
-    output_func.save_labels_csv(data, os.path.basename(filepath)[:-4])
+    if save:
+        output_func.save_labels_csv(data, os.path.basename(filepath)[:-4])

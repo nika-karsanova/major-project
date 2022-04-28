@@ -4,7 +4,9 @@ from typing import Any
 import cv2 as cv
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -14,7 +16,7 @@ from helpers import output_func, constants
 from model import eval
 
 
-def data_collection(path: str, event_type='f'):
+def data_collection(path: str, event_type='j'):
     """A simple accumulator for all the pose estimator results from various videos used for feature extraction for the
     purpose of training Machine Learning models in FSV dataset. """
 
@@ -111,11 +113,18 @@ def train_model(X, Y, save_models=False, filename='default', split=True, evaluat
     """Function that handles training of selected models to perform element classification. Most of the models
     used are accessible through the sklearn Machine Learning library. """
 
+    # Y = Y.reshape(Y.shape[0], 1)
     train_set, train_labels = X, Y
     test_set, test_labels = None, None
 
     if split:
-        ind = int(len(X) / 2)
+        # train_set, train_labels, test_set, test_labels = train_test_split(X,
+        #                                                                   Y,
+        #                                                                   test_size=0.2,
+        #                                                                   random_state=42,
+        #                                                                   shuffle=False,
+        #                                                                   stratify=None)
+        ind = int(len(X) * 0.9)
         train_set, train_labels = X[:ind], Y[:ind]
         test_set, test_labels = X[ind:], Y[ind:]
 
@@ -125,12 +134,17 @@ def train_model(X, Y, save_models=False, filename='default', split=True, evaluat
     svm = make_pipeline(StandardScaler(), SVC(gamma='auto'))
     svm.fit(train_set, train_labels)
 
+    nb = GaussianNB()
+    nb.fit(train_set, train_labels)
+
     if evaluate and (test_set, test_labels) is not None:
         eval.labelled_data_evaluation(test_labels, clf.predict(test_set))
         eval.labelled_data_evaluation(test_labels, svm.predict(test_set))
+        eval.labelled_data_evaluation(test_labels, nb.predict(test_set))
 
     if save_models:
         output_func.save_model(clf, os.path.join(constants.MLDIR, f"{filename}_clf.pkl"))
         output_func.save_model(svm, os.path.join(constants.MLDIR, f"{filename}_svc.pkl"))
+        output_func.save_model(svm, os.path.join(constants.MLDIR, f"{filename}_nb.pkl"))
 
     return clf, svm

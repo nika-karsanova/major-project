@@ -13,7 +13,8 @@ def classify_video(filepath: str, models, plotting: bool = False, to_save: bool 
     in for prediction as opposed to training one in-real-time."""
     cap = cv.VideoCapture(filepath)
     detector = pose.PoseEstimator()
-    # TODO: models is a tuple, unpack into fall_clf and spin_clf (or whatever else the implementation will end up being)
+
+    fall_detector, spin_detector, jump_detector = models
 
     p_time = 0
 
@@ -38,7 +39,7 @@ def classify_video(filepath: str, models, plotting: bool = False, to_save: bool 
 
         """If the key for the current frame does not exist, that means there were no pose extraction to predict 
         the frame type on. Hence, skip and move to the next frame. """
-        if len(detector.model_results[current_frame]) is None:
+        if current_frame not in detector.model_results:
             continue
 
         """Formatting the feature dataset into a 2D array for testing the model"""
@@ -51,14 +52,36 @@ def classify_video(filepath: str, models, plotting: bool = False, to_save: bool 
         current_fps = int(1 / (c_time - p_time))
         p_time = c_time
 
-        # annotate_video(img, model.predict(curr))
-        # annotate_video(img, svm.predict(curr), location=constants.LEFT_CORNER2, colour=constants.RED)
-        output_func.annotate_video(img, current_fps, location=constants.LEFT_CORNER3)
+        output_func.annotate_video(img,
+                                   f"Fall? {fall_detector.predict(curr)}",
+                                   colour=constants.GREEN)
+
+        output_func.annotate_video(img,
+                                   f"Spin? {spin_detector.predict(curr)}",
+                                   location=constants.LEFT_CORNER2,
+                                   colour=constants.RED)
+
+        output_func.annotate_video(img,
+                                   f"Jump? {jump_detector.predict(curr)}",
+                                   location=constants.LEFT_CORNER3,
+                                   colour=constants.BLUE)
+
+        output_func.annotate_video(img,
+                                   current_fps,
+                                   location=constants.LEFT_CORNER4)
 
         if to_save:
             writer.write(img)
 
         cv.imshow(f"Pose for {os.path.basename(filepath)}", img)
+
+        # k = cv.waitKey(0) & 0xFF
+        #
+        # if k == ord("q"):
+        #     break  # quit this video
+        #
+        # elif k == ord("c"):
+        #     continue
 
         if cv.waitKey(1) & 0xFF == ord("q"):
             break
