@@ -1,6 +1,10 @@
 import threading
 
 
+# @TODO: add event type here? and then, before the event type can be changed, confirm emptying of the lists with the
+#  user. Then, in training.py, event type can just be reference through da.event_type.
+
+
 class DataAccumulator(object):
     """Utilising singleton-like approach to the list Data Structure for data accumulation. """
     __instance = None

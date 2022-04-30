@@ -2,14 +2,13 @@
 the labeler, persistence of the ml and such. """
 
 import os
+import pickle
+import traceback
 
 import cv2 as cv
 import pandas as pd
 
 from helpers import constants
-import pickle
-import traceback
-import numpy as np
 
 
 def save_labels_csv(data, video, overwrite=False) -> None:

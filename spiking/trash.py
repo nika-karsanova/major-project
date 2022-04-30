@@ -216,3 +216,105 @@ def annotate_video(image, text, colour=constants.BLACK, location=constants.LEFT_
                colour,  # colour
                2,  # thickness
                cv.LINE_AA)
+
+# def threaded_collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, dict):
+#     """Function that is using OpenCV and MediaPipe together with manually labelled video data to collected and format
+#     the features for the training and testing of the Machine Learning Models."""
+#
+#     # cap = cv.VideoCapture(videofile)
+#     video_getter = videocapture_threaded.VideoCaptureThreaded(videofile).start()
+#     video_shower = imshow_threaded.ImshowThreaded(video_getter.frame).start()
+#     detector = pose.PoseEstimator()
+#
+#     if not os.path.isfile(labfile):
+#         print(f"No label file was found at {labfile}. Attempting to load next video... ")
+#         return
+#
+#     csv_labels_df = pd.read_csv(labfile)
+#     event_df = csv_labels_df.loc[csv_labels_df['category'] == f"{event_type}"]
+#
+#     per_video_labels = {}
+#
+#     tn = 0  # counter for number of True Negative samples
+#     while True:
+#
+#         if video_getter.end or video_shower.end:
+#             video_shower.stop()
+#             video_getter.stop()
+#             break
+#
+#         frame = video_getter.frame
+#
+#         current_frame: int = int(video_getter.cap.get(cv.CAP_PROP_POS_FRAMES))
+#         frame_check = csv_labels_df.loc[(csv_labels_df['frame'] == current_frame), 'category'] == f"{event_type}"
+#
+#         if frame_check.any():  # if current frame is labelled as required event type
+#             per_video_labels[current_frame] = True
+#
+#         elif tn >= len(event_df):  # if we already collected enough True Negative samples from this video
+#             continue  # move on
+#
+#         elif current_frame not in csv_labels_df['frame'].values:  # otherwise
+#             per_video_labels[current_frame] = False
+#             tn += 1
+#
+#         else:
+#             continue
+#
+#         img = detector.detect_pose(image=frame, current_frame=current_frame)
+#
+#         video_shower.frame = img
+#
+#     video_getter.stop()
+#     video_shower.stop()
+#     cv.destroyAllWindows()
+#
+#     if len(detector.model_results) != 0:
+#         return detector.model_results, per_video_labels
+
+
+    # def do_stuff(q): # C:/Users/welleron/Desktop/mmp/datasets/fsv/test/
+    #     while True:
+    #         training.data_collection(os.path.join(path, q.get()))
+    #         q.task_done()
+    #         print("task done")
+    #
+    # q = queue.Queue()
+    # num_threads = 5
+    #
+    # for i in range(num_threads):
+    #     worker = threading.Thread(target=do_stuff, args=(q,))
+    #     # worker.daemon = True
+    #     worker.start()
+    #
+    # for x in os.listdir(path):
+    #     q.put(x)
+    #
+    # q.join()
+    # detail_query()
+
+    #
+    # parser = argparse.ArgumentParser(
+    #     description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+    # )
+    #
+    # parser.add_argument("-mode", help="Test labelling - l, "
+    #                                   "collect pose landmarks from data and train a model - p, "
+    #                                   "retrain models - t "
+    #                                   "or run video analysis - v. Defaults to video analysis."
+    #                                   "Don\'t forget to provide path to relevant files. ")
+    #
+    # parser.add_argument("-path", type=str, help="Provide a path to a file or directory with videos "
+    #                                             "for labelling, analysis or feature extraction."
+    #                                             "Alternatively, provide pickled numpy training data "
+    #                                             "for model retraining.")
+    #
+    # args = parser.parse_args()
+
+    # mode = args.mode
+    # path = args.path
+
+    # if not path:
+    #     raise Exception("Provide path to a file or directory.")
+    #
+    # main(mode, path)

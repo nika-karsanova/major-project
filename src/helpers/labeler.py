@@ -1,8 +1,7 @@
-import sys
-import time
+import os
 
 import cv2 as cv
-import os
+
 from helpers import output_func, constants
 
 

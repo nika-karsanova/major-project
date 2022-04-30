@@ -1,10 +1,8 @@
 import os.path
-from typing import Any
 
 import cv2 as cv
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline
@@ -16,7 +14,7 @@ from helpers import output_func, constants
 from model import eval
 
 
-def data_collection(path: str, event_type='j'):
+def data_collection(path: str, event_type='f'):
     """A simple accumulator for all the pose estimator results from various videos used for feature extraction for the
     purpose of training Machine Learning models in FSV dataset. """
 
@@ -28,11 +26,13 @@ def data_collection(path: str, event_type='j'):
         video_data, video_labels = res
         da.all_train_test.append(video_data)
         da.all_true_labels.append(video_labels)
+        # print("res received for ", path)
 
 
 def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, dict):
     """Function that is using OpenCV and MediaPipe together with manually labelled video data to collected and format
     the features for the training and testing of the Machine Learning Models."""
+
     cap = cv.VideoCapture(videofile)
 
     detector = pose.PoseEstimator()
@@ -49,7 +49,6 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
     tn = 0  # counter for number of True Negative samples
     while cap.isOpened():
         success, frame = cap.read()
-
         if not success:
             break
 
@@ -78,6 +77,7 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
 
     cap.release()
     cv.destroyAllWindows()
+    print("cap released for ", videofile)
 
     if len(detector.model_results) != 0:
         return detector.model_results, per_video_labels
@@ -124,7 +124,7 @@ def train_model(X, Y, save_models=False, filename='default', split=True, evaluat
         #                                                                   random_state=42,
         #                                                                   shuffle=False,
         #                                                                   stratify=None)
-        ind = int(len(X) * 0.9)
+        ind = int(len(X) * 0.77)
         train_set, train_labels = X[:ind], Y[:ind]
         test_set, test_labels = X[ind:], Y[ind:]
 
