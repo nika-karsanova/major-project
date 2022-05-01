@@ -20,6 +20,7 @@ class ImshowThreaded:
             cv2.imshow("Video", self.frame)
             if cv2.waitKey(1) == ord("q"):
                 self.end = True
+            cv2.destroyAllWindows()
 
     def stop(self):
         self.end = True

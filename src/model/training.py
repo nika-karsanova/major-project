@@ -1,59 +1,69 @@
+"""Training class used throughout feature extraction and model training. """
+
 import os.path
 
 import cv2 as cv
 import numpy as np
 import pandas as pd
+import sklearn.ensemble
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from classes import pose, da
+from classes import pose_estimator, da
 from helpers import output_func, constants
 from model import eval
 
 
-def data_collection(path: str, event_type='f'):
+def data_collection(path: str,
+                    event_type=da.event_type):
     """A simple accumulator for all the pose estimator results from various videos used for feature extraction for the
     purpose of training Machine Learning models in FSV dataset. """
 
-    res = collect_data(path,
-                       os.path.join(constants.LABDIR, f"{os.path.basename(path)[:-4]}.csv"),
-                       event_type=event_type)
+    res: tuple | None = collect_data(path,
+                                     os.path.join(constants.LABDIR, f"{os.path.basename(path)[:-4]}.csv"),
+                                     event_type=event_type)
 
     if res is not None:
         video_data, video_labels = res
         da.all_train_test.append(video_data)
         da.all_true_labels.append(video_labels)
-        # print("res received for ", path)
 
 
-def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, dict):
+def collect_data(videofile: str,
+                 labfile: str,
+                 event_type: str = "f") -> (dict, dict):
     """Function that is using OpenCV and MediaPipe together with manually labelled video data to collected and format
     the features for the training and testing of the Machine Learning Models."""
 
-    cap = cv.VideoCapture(videofile)
+    cap: cv.VideoCapture = cv.VideoCapture(videofile)
 
-    detector = pose.PoseEstimator()
+    detector: pose_estimator.PoseEstimator = pose_estimator.PoseEstimator()
 
     if not os.path.isfile(labfile):
         print(f"No label file was found at {labfile}. Attempting to load next video... ")
         return
 
-    csv_labels_df = pd.read_csv(labfile)
-    event_df = csv_labels_df.loc[csv_labels_df['category'] == f"{event_type}"]
+    csv_labels_df: pd.DataFrame = pd.read_csv(labfile)
+    event_df: pd.DataFrame = csv_labels_df.loc[csv_labels_df['category'] == f"{event_type}"]
 
-    per_video_labels = {}
+    per_video_labels: dict = {}
 
-    tn = 0  # counter for number of True Negative samples
+    cv.startWindowThread()
+
+    tn: int = 0  # counter for number of True Negative samples
     while cap.isOpened():
+        success: bool
+        frame: np.ndarray
+
         success, frame = cap.read()
         if not success:
             break
 
         current_frame: int = int(cap.get(cv.CAP_PROP_POS_FRAMES))
-        frame_check = csv_labels_df.loc[(csv_labels_df['frame'] == current_frame), 'category'] == f"{event_type}"
+        frame_check: pd.Series = csv_labels_df.loc[(csv_labels_df['frame'] == current_frame), 'category'] == f"{event_type} "
 
         if frame_check.any():  # if current frame is labelled as required event type
             per_video_labels[current_frame] = True
@@ -68,7 +78,7 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
         else:
             continue
 
-        img = detector.detect_pose(image=frame, current_frame=current_frame)
+        img: np.ndarray = detector.detect_pose(image=frame, current_frame=current_frame)
 
         cv.imshow(f"Pose for {videofile}", img)
 
@@ -76,18 +86,21 @@ def collect_data(videofile: str, labfile: str, event_type: str = "f") -> (dict, 
             break
 
     cap.release()
-    cv.destroyAllWindows()
-    print("cap released for ", videofile)
+    cv.destroyWindow(f"Pose for {videofile}")
 
     if len(detector.model_results) != 0:
         return detector.model_results, per_video_labels
 
 
-def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, filename='default'):
+def prepare_data(all_train_test: list,
+                 all_true_labels: list,
+                 save_data: bool = False,
+                 filename: str = 'default') -> (np.ndarray, np.ndarray):
     """Function to convert collected data into a 2D numpy array for training and testing ML models.
     Initially, Converts the list of dicts into 4D numpy array."""
 
-    X, Y = [], []
+    X = []
+    Y = []
 
     for x, y in zip(all_train_test, all_true_labels):
         for k in list(y):
@@ -97,7 +110,8 @@ def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, f
         X.extend(x.values())
         Y.extend(y.values())
 
-    X, Y = np.array(X), np.array(Y)
+    X = np.array(X)
+    Y = np.array(Y)
 
     nsamples, nx, ny, nz = X.shape
     X = X.reshape((nsamples, nx * ny * nz))
@@ -109,7 +123,12 @@ def prepare_data(all_train_test: list, all_true_labels: list, save_data=False, f
     return X, Y
 
 
-def train_model(X, Y, save_models=False, filename='default', split=True, evaluate=True):
+def train_model(X: np.ndarray,
+                Y: np.ndarray,
+                save_models: bool = False,
+                filename: str = 'default',
+                split: bool = True,
+                evaluate: bool = True):
     """Function that handles training of selected models to perform element classification. Most of the models
     used are accessible through the sklearn Machine Learning library. """
 
@@ -124,7 +143,7 @@ def train_model(X, Y, save_models=False, filename='default', split=True, evaluat
         #                                                                   random_state=42,
         #                                                                   shuffle=False,
         #                                                                   stratify=None)
-        ind = int(len(X) * 0.77)
+        ind: int = int(len(X) * 0.77)
         train_set, train_labels = X[:ind], Y[:ind]
         test_set, test_labels = X[ind:], Y[ind:]
 
@@ -145,6 +164,4 @@ def train_model(X, Y, save_models=False, filename='default', split=True, evaluat
     if save_models:
         output_func.save_model(clf, os.path.join(constants.MLDIR, f"{filename}_clf.pkl"))
         output_func.save_model(svm, os.path.join(constants.MLDIR, f"{filename}_svc.pkl"))
-        output_func.save_model(svm, os.path.join(constants.MLDIR, f"{filename}_nb.pkl"))
-
-    return clf, svm
+        output_func.save_model(nb, os.path.join(constants.MLDIR, f"{filename}_nb.pkl"))

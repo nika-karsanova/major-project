@@ -1,3 +1,5 @@
+"""Labelled data evaluation module."""
+
 from sklearn.metrics import confusion_matrix
 
 

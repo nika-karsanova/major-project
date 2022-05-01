@@ -1,20 +1,27 @@
+"""Video labeler."""
+
 import os
 
 import cv2 as cv
+import numpy as np
 
 from helpers import output_func, constants
 
 
 def label_videos(filepath: str):
     """Function used as a labelling helper for assigning and saving labels from a video played using OpenCV into a
-    CSV file """
-    cap = cv.VideoCapture(filepath)
+    CSV file. Supports following labels: z - for the frames, which are zoomed in on the skaters and would not be the
+    best pose samples for training; f - to identify a fall; s - to identify a spin; j - to identify a jump."""
+    cap: cv.VideoCapture = cv.VideoCapture(filepath)
 
-    data = []
+    data: list = []
 
-    save = True
+    save: bool = True
 
     while cap.isOpened():
+        success: bool
+        frame: np.ndarray
+
         success, frame = cap.read()
 
         if not success:
@@ -27,7 +34,7 @@ def label_videos(filepath: str):
 
         cv.imshow(f"Labelling video {os.path.basename(filepath)}", frame)
 
-        k = cv.waitKey(0) & 0xFF
+        k: int = cv.waitKey(0) & 0xFF  # stores the pressed value in unicode representaion
 
         if k == ord("q"):
             save = False
@@ -41,7 +48,7 @@ def label_videos(filepath: str):
             x = {
                 "frame": current_frame,
                 "filename": os.path.basename(filepath),
-                "category": chr(k),
+                "category": chr(k),  # converts the k value in unicode to char representation
             }
 
             data.append(x)
@@ -50,4 +57,5 @@ def label_videos(filepath: str):
     cv.destroyAllWindows()
 
     if save:
+        # does not prompt for a filename, saves in with the video filename instead
         output_func.save_labels_csv(data, os.path.basename(filepath)[:-4])

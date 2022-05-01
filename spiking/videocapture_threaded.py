@@ -26,5 +26,5 @@ class VideoCaptureThreaded:
 
     def stop(self):
         self.end = True
-        self.cap.release()
+        # self.cap.release()
 

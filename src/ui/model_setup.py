@@ -1,5 +1,23 @@
+"""File to deal with loading the models used throughout the program."""
+
 from helpers import output_func, constants
 from ui import stdin_management
+
+
+def model_eval():
+    print(f"Model for what event type would you like to evaluate? Jump/Spin/Fall")
+
+    to_return = []
+    namings = {'j': 'jumps', 's': 'spins', 'f': 'falls'}
+    event = stdin_management.verify_event_type_query()
+
+    for m in [f'output/ml/models/{namings[event]}_clf.pkl',
+              f'output/ml/models/{namings[event]}_svc.pkl',
+              f'output/ml/models/{namings[event]}_nb.pkl']:
+
+        to_return.append(output_func.load_model(m))
+
+    return tuple(to_return)
 
 
 def model_choice():
@@ -16,11 +34,6 @@ def model_choice():
         return fall_clf, spin_clf, jump_clf
 
     else:
-
-        # print(f"Provide models from custom file? Yes/No. If no, you'll be offered to choose from pre-trained models.")
-        #
-        # if verify_yes_no_query():
-        #     return output_func.load_model(custom_filename('model'))
 
         for clf in ['fall', 'spin', 'jump']:
             print("\n".join([f"Choose a model to load for {clf} detection: ",
