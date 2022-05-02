@@ -5,7 +5,6 @@ import os.path
 import cv2 as cv
 import numpy as np
 import pandas as pd
-import sklearn.ensemble
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline

@@ -82,6 +82,11 @@ class TestDataAccumulation(unittest.TestCase):
 
         self.assertTrue(len(da.all_train_test) == 0)
 
+    def test_cls_event_type(self):
+        """Testing the event type class instance."""
+        da.event_type = 'j'
+        self.assertTrue(self.sample.event_type == da.event_type)
+
     def tearDown(self) -> None:
         self.sample.empty_dataset()
 

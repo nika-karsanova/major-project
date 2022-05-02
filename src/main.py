@@ -1,11 +1,13 @@
 """Main Application."""
-import pandas as pd
 
 from helpers import output_func, labeler
 from ui import model_setup, mode_init
+import threading, multiprocessing
+import time
 
 
-def main(path: str = '', mode: str = ''):
+def main(mode: str = '',
+         path: str = ''):
     """Function to control the available modes and call the appropriate modules."""
     if mode == '' or mode == 'v':  # video analysis
         mode_init.check_path(path, mode_init.analyse_video_provided, model_setup.model_choice())
@@ -16,7 +18,7 @@ def main(path: str = '', mode: str = ''):
     elif mode == 'p':  # collect pose landmarks
         mode_init.setup_data_collection(path)
 
-    elif mode == "t" and path.endswith('.pkl'):  # retrain model with a given fvs file
+    elif mode == "t" and str(path).endswith('.pkl'):  # retrain model with a given fvs file
         res: tuple | None = output_func.load_fvs(path)
 
         if res is not None:
@@ -26,14 +28,16 @@ def main(path: str = '', mode: str = ''):
     elif mode == 's':
         mode_init.save_da_data()
 
-    elif mode == 'e' and path.endswith('.pkl'):
+    elif mode == 'e' and str(path).endswith('.pkl'):
         mode_init.setup_model_evaluation(path)
 
-    elif (mode == 't' or mode == 'e') and not path.endswith('.pkl'):
+    elif (mode == 't' or mode == 'e') and not str(path).endswith('.pkl'):
         print("\nPickle file was not provided. Provide a pickle file and repeat.\n")
+        return
 
     else:
         print("No such mode, try again.", end='\n')
+        return
 
 
 if __name__ == "__main__":
