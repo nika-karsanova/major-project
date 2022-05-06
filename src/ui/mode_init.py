@@ -29,13 +29,17 @@ def setup_data_collection(path: str):
         data_prep = stdin_management.verify_yes_no_query()
 
         if data_prep:
-            X, Y = save_da_data()
 
-            print(f"Would you like to retrain models with new dataset? Yes/No")
-            tt = stdin_management.verify_yes_no_query()
+            res = save_da_data()
 
-            if tt:
-                setup_model_retraining(X, Y)
+            if res is not None:
+
+                X, Y = res
+                print(f"Would you like to retrain models with new dataset? Yes/No")
+                tt = stdin_management.verify_yes_no_query()
+
+                if tt:
+                    setup_model_retraining(X, Y)
 
     def path_checker():
         """Verifies whether the path passed is valid. Add it to the queue and then initialised
