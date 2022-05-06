@@ -53,7 +53,8 @@ def setup_data_collection(path: str):
                     q.append(os.path.join(path, file))
 
         else:
-            print("\nCouldn't identify path provided. Please check whether the path is valid.\n")
+            print("\nCouldn't identify path provided. "
+                  "Please check whether the path is valid.\n")
             return
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=7) as executor:
@@ -117,8 +118,11 @@ def setup_model_evaluation(path: str):
             X, Y = X[ind:], Y[ind:]
 
         for m in res:
-            print(f"Results for {m.__class__.__name__}")
-            training.eval.labelled_data_evaluation(Y, m.predict(X))
+
+            training.eval.labelled_data_evaluation(Y,
+                                                   m.predict(X),
+                                                   m.predict_proba(X),
+                                                   {m.__class__.__name__})
 
 
 def setup_model_retraining(data,

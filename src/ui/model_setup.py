@@ -23,6 +23,20 @@ def model_eval():
 def model_choice():
     """Loads models of choice from the persistent storage. """
 
+    def model_config(event: str):
+        """Allows user to configure the model they want to use for each individual type of classification."""
+
+        valid = {1: f'output/ml/models/{event}_clf.pkl',
+                 2: f'output/ml/models/{event}_svc.pkl',
+                 3: f'output/ml/models/{event}_nb.pkl'}
+
+        while True:
+            answer = int(input("Enter your choice: "))
+            if answer in valid:
+                return valid[answer]
+            else:
+                print(f"Option out of bounds. Choose one of the given options. \n")
+
     to_return = []
 
     print(f"Load default models for classification? Yes/No")
@@ -45,16 +59,3 @@ def model_choice():
             to_return.append(event_clf)
 
         return tuple(to_return)
-
-    
-def model_config(event: str):
-    valid = {1: f'output/ml/models/{event}_clf.pkl',
-             2: f'output/ml/models/{event}_svc.pkl',
-             3: f'output/ml/models/{event}_nb.pkl'}
-
-    while True:
-        answer = int(input("Enter your choice: "))
-        if answer in valid:
-            return valid[answer]
-        else:
-            print(f"Option out of bounds. Choose one of the given options. \n")

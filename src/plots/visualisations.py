@@ -189,3 +189,23 @@ def process_data(data: dict,
 
     plot_coordinate_over_landmarks(df=df, videoname=videoname)
     plot_xyz_landmarks(df=df, videoname=videoname)
+
+
+def plot_roc_auc_curve(fpr, tpr, auc, model_name):
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.plot(fpr, tpr)
+    ax.plot(np.linspace(0, 1, 100),
+            np.linspace(0, 1, 100),
+            label='Baseline',
+            linestyle='--')
+
+    ax.set_title(f'Model: {model_name}, AUC: {auc}')
+    ax.set_xlabel("false positive rate")
+    ax.set_ylabel("true positive rate")
+    ax.legend()
+
+    savepath = os.path.join(constants.GRAPHDIR, f"roc_auc/{model_name}/")
+    os.makedirs(savepath, exist_ok=True)
+    fname = datetime.datetime.now().strftime("%y%m%d_%H%M%S_") + str(model_name)
+    fig.show()
+    fig.savefig(transparent=True, fname=savepath + fname + f".png")

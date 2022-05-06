@@ -14,6 +14,7 @@ def pickle_stub():
 
 
 class TestModuleMain(unittest.TestCase):
+    """Module to test modes control through main function."""
     def test_invalid_mode_passed_int(self):
         """Test how main handles mode being passed as an int."""
         self.assertIsNone(main(mode=123))

@@ -23,6 +23,6 @@ GRAPHDIR: str = "output/graphs/"
 POSEDIR: str = "output/pose/"
 
 # Best Performing models based on the evaluation results per each type of an event
-FALL_CLF: str = "output/ml/models/falls_nb.pkl"
-SPIN_CLF: str = "output/ml/models/spins_svc.pkl"
-JUMP_CLF: str = "output/ml/models/jumps_svc.pkl"
+FALL_CLF: str = "output/ml/models/falls_svc.pkl"
+SPIN_CLF: str = "output/ml/models/spins_clf.pkl"
+JUMP_CLF: str = "output/ml/models/jumps_clf.pkl"

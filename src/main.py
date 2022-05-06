@@ -2,8 +2,6 @@
 
 from helpers import output_func, labeler
 from ui import model_setup, mode_init
-import threading, multiprocessing
-import time
 
 
 def main(mode: str = '',
@@ -68,5 +66,5 @@ if __name__ == "__main__":
 
         main(mode=mode, path=path)
 
-        # Testing directory
-        # C:/Users/welleron/Desktop/mmp/datasets/fsv/test/26.mp4
+    # Testing directory
+    # C:/Users/welleron/Desktop/mmp/datasets/fsv/test/26.mp4

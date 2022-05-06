@@ -6,9 +6,8 @@ import cv2 as cv
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 from classes import pose_estimator, da
@@ -136,31 +135,39 @@ def train_model(X: np.ndarray,
     test_set, test_labels = None, None
 
     if split:
-        # train_set, train_labels, test_set, test_labels = train_test_split(X,
-        #                                                                   Y,
-        #                                                                   test_size=0.2,
-        #                                                                   random_state=42,
-        #                                                                   shuffle=False,
-        #                                                                   stratify=None)
-        ind: int = int(len(X) * 0.77)
-        train_set, train_labels = X[:ind], Y[:ind]
-        test_set, test_labels = X[ind:], Y[ind:]
+        train_set, test_set, train_labels, test_labels = train_test_split(X,
+                                                                          Y,
+                                                                          test_size=0.2,
+                                                                          random_state=42,
+                                                                          shuffle=False,
+                                                                          stratify=None)
+        # ind: int = int(len(X) * 0.77)
+        # train_set, train_labels = X[:ind], Y[:ind]
+        # test_set, test_labels = X[ind:], Y[ind:]
 
     clf = RandomForestClassifier(random_state=0)
+    print("CLF")
     clf.fit(train_set, train_labels)
 
-    svm = make_pipeline(StandardScaler(), SVC(gamma='auto'))
+    # svm = make_pipeline(StandardScaler(), SVC(gamma='auto', probability=True))
+    svm = SVC(gamma='auto', probability=True)
+    print("SVM")
     svm.fit(train_set, train_labels)
 
     nb = GaussianNB()
+    print("NB")
     nb.fit(train_set, train_labels)
-
-    if evaluate and (test_set, test_labels) is not None:
-        eval.labelled_data_evaluation(test_labels, clf.predict(test_set))
-        eval.labelled_data_evaluation(test_labels, svm.predict(test_set))
-        eval.labelled_data_evaluation(test_labels, nb.predict(test_set))
 
     if save_models:
         output_func.save_model(clf, os.path.join(constants.MLDIR, f"{filename}_clf.pkl"))
         output_func.save_model(svm, os.path.join(constants.MLDIR, f"{filename}_svc.pkl"))
         output_func.save_model(nb, os.path.join(constants.MLDIR, f"{filename}_nb.pkl"))
+
+    models: list = [clf, svm, nb]
+
+    for m in models:
+        if evaluate and (test_set, test_labels) is not None:
+            eval.labelled_data_evaluation(test_labels,
+                                          m.predict(test_set),
+                                          m.predict_proba(test_set),
+                                          model_name={m.__class__.__name__})

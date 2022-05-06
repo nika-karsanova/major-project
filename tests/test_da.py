@@ -12,6 +12,7 @@ def second():
 
 
 class TestDataAccumulation(unittest.TestCase):
+    """Module to test Data Accumulator singleton."""
     def setUp(self) -> None:
         self.sample = data_accumulator.DataAccumulator()
 
